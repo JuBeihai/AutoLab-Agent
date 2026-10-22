@@ -1,0 +1,4 @@
+{"proposals":[
+{"id":"ratio","hypothesis":"验证队列与运力比值的执行链路","evidence":"合成数据执行测试，不代表真实业务收益","feature_recipes":[{"name":"queue_idle_pressure","kind":"expression","expression":{"op":"div","args":[{"op":"add","args":[{"col":"sp1_queue_count"},{"col":"sp2_queue_count"}]},{"op":"add","args":[{"col":"valid_idle_vehicles_nums"},{"const":1}]}]}}]},
+{"id":"history","hypothesis":"验证历史 ETS 聚合执行与时间边界","evidence":"合成数据按城市聚合，测试前七天已结束订单","feature_recipes":[{"name":"city_ets_7d","kind":"history","keys":["city_code"],"value":"true_ets","agg":"median","days":7}]}
+]}

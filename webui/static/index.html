@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>ETS Agent 控制台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">◆</span>
+      <span class="title">ETS模型训练agent</span>
+    </div>
+      <button id="btn-run-settings" type="button">运行设置</button>
+    <div class="run-panel primary-selectors">
+      <label title="用于下一条咨询和下一次启动的实验；不切换正在运行的任务">Agent 模型<select id="llm-profile"><option value="chat">YOUR_CHAT_MODEL</option><option value="responses">YOUR_RESPONSES_MODEL</option></select></label>
+      <label title="本仓库只提供合成数据演示">训练数据<select id="data-source" disabled><option value="online">合成数据演示</option></select></label>
+      <label>训练模型<select id="model-family"><option value="xgb">XGBoost</option><option value="mlp">简单神经网络（MLP）</option></select></label>
+      <label>训练方式<select id="training-mode"><option value="pooled">三城合并训练</option><option value="by_city">分城市训练（示例区域A / 示例区域B / 示例区域C）</option></select></label>
+    </div>
+    <div class="run-panel">
+      <button id="btn-run" class="primary">启动</button>
+      <button id="btn-stop" class="danger" disabled>停止</button>
+      <button id="btn-sync-run" type="button" title="重新核对后台任务状态，不会启动或停止实验">同步状态</button>
+      <span id="run-status" role="status" aria-live="polite">正在核对任务状态…</span>
+    </div>
+  </header>
+
+  <main>
+    <aside class="left-pane">
+      <nav class="tabs">
+        <div class="session-switcher">
+          <div class="session-heading">
+            <label for="session-select">查看会话</label>
+            <button id="btn-delete-session" type="button" class="session-delete" aria-label="删除所选会话" title="删除所选会话" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>
+              </svg>
+            </button>
+          </div>
+          <button id="session-select" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="session-menu">最新会话 ▾</button>
+          <div id="session-menu" class="session-menu" role="dialog" aria-label="选择或管理会话" hidden>
+            <button id="btn-new-chat" type="button" class="session-new">＋ 新建对话</button>
+            <button id="btn-follow-session" type="button" class="session-follow">最新会话（跟随实验）</button>
+            <div id="session-list" class="session-list"></div>
+            <p class="session-menu-note">新建对话不启动实验。垃圾桶仅删除对应项，需确认。</p>
+            <button id="btn-close-sessions" type="button">关闭列表</button>
+          </div>
+        </div>
+        <button class="tab active" data-tab="history">历史实验</button>
+        <button class="tab" data-tab="lineage">血缘图</button>
+        <button class="tab" data-tab="memory">记忆</button>
+        <button class="tab" data-tab="workspace" id="tab-workspace">工作空间</button>
+        <button class="tab" data-tab="discovery">数据与特征</button>
+        <button class="tab" data-tab="models">模型仓库</button>
+        <button class="tab" data-tab="run-settings">运行设置</button>
+        <button class="tab" data-tab="tuning">基线配置</button>
+        <button class="tab" data-tab="hints">用户指导</button>
+      </nav>
+      <div class="tab-content-wrap">
+
+<section class="tab-panel" data-panel="run-settings"><h2>运行设置</h2><section class="settings-section"><h3>本地快照</h3><div class="run-panel settings-grid">
+
+
+
+      <label id="snapshot-control" hidden>本地快照<select id="snapshot-id"><option value="">正在加载…</option></select></label>
+      <button id="btn-refresh-snapshots" type="button" hidden>刷新快照</button></div></section><section class="settings-section"><h3>探索与预算</h3><div class="run-panel settings-grid">      <label>轮数上限<input id="rounds" type="number" min="0" max="20" value="5"></label>
+      <label>每轮尝试上限<input id="max-proposals" type="number" min="1" max="8" value="3"></label>
+      <label class="chk" title="每次实验后重新规划；总尝试预算=轮数×每轮上限，不再预先批量生成三个方案"><input id="continuous-search" type="checkbox" checked>持续探索</label>
+      <label class="chk" title="允许删除/替换特征、同会话分支、有界调参；新数据和代码扩展需人工审批。baseline不变"><input id="research-skills" type="checkbox" checked>扩展研究能力</label>
+      <label class="chk" title="MLP专用。按验证结果自动做调参、XGB对照、多种子复验及融合；候选预算=轮数×每轮上限，复验额外最多24次训练，受搜索分钟总预算约束。使用内置实验策略，不调用Agent大模型"><input id="model-study" type="checkbox">自主模型实验</label>
+      <label class="chk" title="启动实验后，每次规划前由模型自主决定搜索、阅读或复用已有证据；仅影响实验，下方对话独立支持联网"><input id="web-research-enabled" type="checkbox">联网研究</label>
+      <button id="btn-web-research" type="button">资料调研</button>
+      <label title="baseline完成后计时；预算到期不再安排新实验，不强杀已经开始的实验">搜索分钟<input id="search-timeout" type="number" min="1" max="1440" value="120"></label>
+      <label title="连续未提升全局冠军的尝试达到此数时停止">无提升上限<input id="search-patience" type="number" min="1" max="160" value="9"></label></div></section><section class="settings-section"><h3>运行选项</h3><div class="run-panel settings-grid">      <label class="chk" title="只读取真实数据并生成字段画像，不训练、不调用 LLM"><input id="profile-only" type="checkbox">只做画像</label>
+      <label class="chk"><input id="no-agent" type="checkbox">只跑 baseline</label>
+      <label class="chk" title="普通探索继承上次配方；自主模型实验继承MLP冠军完整特征与权重作为候选，并在本次时间验证集重训"><input id="resume-recipes" type="checkbox">继承上次特征</label></div></section>    <div class="log-path-hint" id="log-path-hint" title="点击复制路径">
+      <span class="lph-label">📝 日志</span>
+      <span class="lph-value">加载中…</span>
+    </div>
+</section>
+      <section class="tab-panel active" data-panel="history">
+        <div id="city-training-summary" hidden></div>
+        <div class="panel-actions">
+          <button id="btn-refresh-history">刷新</button>
+        </div>
+        <div id="history-table" class="table-wrap"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="memory">
+        <div class="panel-actions">
+          <button id="btn-refresh-memory">刷新</button>
+        </div>
+        <div id="memory-view"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="lineage">
+        <div class="panel-actions">
+          <span class="hint" style="margin-right:auto">连线表示实际比较的父模型；旧记录缺少父节点时不推测连线。绿=通过门禁，蓝=baseline。</span>
+          <button id="btn-refresh-lineage">刷新</button>
+        </div>
+        <div id="lineage-view"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="discovery">
+        <p class="hint">查看当前会话的实验依据与结果。自主模型实验使用训练期内时间验证；普通特征探索的测试成绩参与候选筛选。</p>
+        <button id="btn-refresh-discovery">刷新字段画像</button>
+        <div id="discovery-view"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="workspace">
+        <div class="workspace-heading"><div><h2>工作空间</h2><p class="hint">项目共享资料库 · 论文、文章与开源代码，不随会话切换</p></div><button id="workspace-refresh" type="button">刷新</button></div>
+        <p id="workspace-summary" class="hint" aria-live="polite"></p>
+        <details class="workspace-add"><summary>＋ 添加网络资料</summary>
+        <form id="workspace-import" class="workspace-import">
+          <label>保存网络资料<select id="workspace-import-kind"><option value="document">文章 / 论文</option><option value="code">源码 / GitHub 仓库 / ZIP</option></select></label>
+          <label class="workspace-url">公开 HTTPS 网址<input id="workspace-url" type="url" required maxlength="2000" placeholder="粘贴文章、论文、源码文件或 GitHub 仓库网址"></label>
+          <button id="workspace-save" type="submit" class="primary">下载并保存</button>
+        </form>
+        <p class="hint">只收录下载的论文正文、文章、技术文档和代码；首页、目录、搜索、词典等浏览页面不收录，相同内容合并展示。代码不执行，ZIP 不解压。不支持登录、付费墙或私有仓库。请勿填写密钥。</p>
+        </details>
+        <p id="workspace-import-status" role="status"></p>
+        <form id="workspace-filter" class="workspace-filter">
+          <input id="workspace-query" type="search" maxlength="300" aria-label="搜索资料标题或来源" placeholder="搜索标题、文件名或来源网址">
+          <select id="workspace-kind" aria-label="资料类型"><option value="all">全部类型</option><option value="pdf">论文 / PDF</option><option value="article">文章 / 文本</option><option value="code">源码文件</option><option value="archive">代码 ZIP</option></select>
+          <button type="submit">筛选</button>
+        </form>
+        <p id="workspace-list-status" role="status"></p>
+        <div class="workspace-toolbar"><span class="hint">单击选中 · 双击或 Enter 打开 · 空格预览</span><button id="workspace-settings" type="button">打开方式…</button></div>
+        <div id="workspace-list" class="workspace-grid" aria-label="资料文件"></div>
+        <div id="workspace-selection" class="workspace-selection" hidden></div>
+        <button id="workspace-more" type="button" hidden>加载更多资料</button>
+        <p class="hint workspace-storage">文件保存在项目 artifacts/web_research/documents/ 中；下载原文件不会删除服务器副本。</p>
+      </section>
+
+      <dialog id="workspace-preview-dialog" class="workspace-dialog" aria-labelledby="workspace-preview-title">
+        <div class="workspace-heading"><h2 id="workspace-preview-title">快速查看</h2><button id="workspace-preview-close" type="button">关闭</button></div>
+        <p id="workspace-preview-info" class="hint"></p>
+        <pre id="workspace-preview-text" class="research-reader"></pre>
+        <button id="workspace-preview-more" type="button">继续读取</button>
+        <p id="workspace-preview-status" role="status"></p>
+      </dialog>
+      <dialog id="workspace-settings-dialog" class="workspace-dialog" aria-labelledby="workspace-settings-title">
+        <form id="workspace-settings-form">
+          <div class="workspace-heading"><h2 id="workspace-settings-title">文件打开方式</h2><button id="workspace-settings-close" type="button">关闭</button></div>
+          <label class="research-field">PDF 双击行为<select id="workspace-pdf-mode"><option value="download">下载到 Mac（由本机阅读器打开）</option><option value="browser">Chrome 新标签页预览</option></select></label>
+          <p class="hint">网页无法直接调用 macOS“预览”。下载后从 Chrome 下载列表打开；如菜单提供“始终打开此类型文件 / 使用系统查看器打开”，可自行启用。阅读器由 Mac 的默认应用决定。</p>
+          <label class="research-field">VS Code Remote-SSH 连接名<input id="workspace-ssh-host" maxlength="100" autocomplete="off" placeholder="填写 Mac 的 SSH Host 别名"></label>
+          <p class="hint">填写你在 Mac VS Code 中连接这台云服务器时使用的 Host 别名，不是 Mac 用户名。需要本机安装 VS Code 和 Remote-SSH；Chrome 可能要求确认打开应用。</p>
+          <p class="hint">代码打开的是服务器归档原文件（文件名可能为 original.code，可手动选择语言模式），不是 Mac 下载副本。不要修改归档原件；如需开发，请另存副本。ZIP 仅下载，不自动解压或执行。</p>
+          <p id="workspace-settings-status" role="status"></p>
+          <button type="submit" class="primary">保存到此浏览器</button>
+        </form>
+      </dialog>
+
+      <section class="tab-panel" data-panel="models"><h3>模型仓库</h3><div id="model-catalog"></div><button id="refresh-models">刷新模型</button><div id="saved-models" class="table-wrap"></div></section>
+      <section class="tab-panel" data-panel="tuning">
+
+        <div id="tuning-form"></div>
+        <button id="btn-save-tuning" class="primary">保存</button>
+        <div id="tuning-msg" class="msg"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="hints">
+        <p class="hint">实验指导统一在此提交和查看，支持多行。指导全局共享，不绑定当前查看的会话；后续生成实验方案时，每轮优先读取最新一条待生效指导。提交不会立即获得 AI 回复、自动启动实验或改变已经开始的轮次。</p>
+        <div class="hint-editor">
+          <textarea id="hint-input" rows="4" placeholder="例如：下一轮重点降低示例区域B over_ratio；尝试用 h3_res6 分组做 7 天历史；避免加超过 2 个特征..."></textarea>
+          <div class="hint-editor-actions">
+            <button id="btn-view-prompt">查看当前 LLM prompt</button>
+            <button id="btn-add-hint" class="primary">追加指导</button>
+          </div>
+        </div>
+        <div id="hints-list"></div>
+      </section>
+      </div>
+    </aside>
+
+    <div id="splitter" class="splitter" title="拖动调节左右宽度"></div>
+
+    <section class="right-pane">
+      <div class="right-header">
+        <h3>Agent 日志 & 对话</h3>
+        <div class="right-actions">
+          <button id="btn-restore-chat" type="button" title="重新加载当前会话保存在服务器的对话，清屏不会删除存档">恢复对话</button>
+          <button id="btn-code-workspace" type="button">代码工作区</button>
+          <label class="chk" title="只读检索其他会话的实验记录，不读取其他聊天内容；引用时标明来源"><input id="chat-history-enabled" type="checkbox" checked>参考历史实验</label>
+          <button id="btn-interrupt-agent" type="button" class="danger" disabled>中断生成</button>
+          <label class="chk"><input id="autoscroll" type="checkbox" checked>自动滚动</label>
+          <button id="btn-clear-log">清屏</button>
+        </div>
+      </div>
+      <div id="pinned-task" class="pinned-task" aria-label="当前会话实验运行进度" hidden></div>
+      <div id="log-view" class="log-view"></div>
+      <div class="chat-input">
+        <input id="chat-text" aria-label="咨询当前会话及历史实验" placeholder="可询问历史实验，例如：S000000K 为什么没有提升？">
+        <button id="btn-chat-send">发送</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="detail-modal" class="modal hidden">
+    <div class="modal-body">
+      <button class="modal-close" id="btn-modal-close">×</button>
+      <div id="detail-content">加载中…</div>
+    </div>
+  </div>
+
+  <dialog id="web-research-dialog" aria-labelledby="web-research-title">
+    <button id="web-research-close" type="button" style="float:right">关闭</button>
+    <h2 id="web-research-title">联网资料调研</h2>
+    <p>搜索论文与文章，下载原文并阅读正文。收集和阅读无需大模型接口；开启“联网研究”后，正文片段会供实验规划参考。</p>
+    <label>研究方向 <select id="web-research-topic" aria-label="研究方向"></select></label>
+    <label class="research-field">搜索关键词（可选）<input id="web-research-query" type="text" maxlength="300" placeholder="例如 gradient boosting target encoding"></label>
+    <label class="research-field">论文或文章网址（可选，每行一个，最多5个）<textarea id="web-research-urls" rows="3" placeholder="https://arxiv.org/pdf/1603.02754"></textarea></label>
+    <p class="hint">关键词留空时按研究方向搜索；仅填网址时直接读取。搜索词会发送给公开搜索服务，请勿填写内部数据或密钥。</p>
+    <label><input id="web-research-full-text" type="checkbox" checked>下载并提取正文</label>
+    <label><input id="web-research-refresh" type="checkbox">重新检索（忽略缓存）</label>
+    <button id="web-research-fetch" type="button">开始调研</button>
+    <div id="web-research-result" aria-live="polite"></div>
+  </dialog>
+  <script src="web-research.js"></script>
+  <script src="controls.js"></script>
+  <script src="markdown.js"></script>
+  <script src="app.js"></script>
+  <script src="workspace.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "name": "Artificial demo threshold (not an experimental result)",
+  "source_kind": "synthetic_placeholder",
+  "source_notebook": "excluded_reference.ipynb",
+  "selection_metric": "answer_cancel_h3_7_6bin",
+  "num_bins": 6,
+  "bin_edges_minutes": [
+    1,
+    5,
+    10,
+    20,
+    30
+  ],
+  "h3_resolution": 7,
+  "population": "answer_cancel",
+  "training_population": "unified",
+  "queue_rule": "has_queue",
+  "non_queue_after_ordering": "model",
+  "window": {
+    "train_start": "2024-08-05",
+    "train_end": "2024-09-09",
+    "test_start": "2024-09-10",
+    "test_end": "2024-09-16"
+  },
+  "metrics": {
+    "ALL": {
+      "total": 1000,
+      "recall": 500,
+      "recall_ratio": 0.5
+    },
+    "100001": {
+      "total": 1000,
+      "recall": 500,
+      "recall_ratio": 0.5
+    },
+    "100002": {
+      "total": 1000,
+      "recall": 500,
+      "recall_ratio": 0.5
+    },
+    "100003": {
+      "total": 1000,
+      "recall": 500,
+      "recall_ratio": 0.5
+    }
+  },
+  "warning": "All values here are artificial placeholders. They are not real data, a measured baseline, or a claim about model performance."
+}

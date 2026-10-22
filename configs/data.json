@@ -1,0 +1,55 @@
+{
+  "window": {
+    "start_date": "2024-08-05",
+    "end_date": "2024-09-16",
+    "train_start": "2024-08-05",
+    "train_end": "2024-09-09",
+    "test_start": "2024-09-10",
+    "test_end": "2024-09-16"
+  },
+  "cities": {
+    "100001": "示例区域A",
+    "100002": "示例区域B",
+    "100003": "示例区域C"
+  },
+  "filters": {
+    "is_test": 0,
+    "service_type_code": "SERVICE_DEMO",
+    "display_flag": 1,
+    "tick_service_product_code": [
+      "PRODUCT_A",
+      "PRODUCT_B",
+      "PRODUCT_A,PRODUCT_B"
+    ]
+  },
+  "hive_tables": {
+    "order": "demo.orders",
+    "feature": "demo.features",
+    "queue_log": "demo.queue_events"
+  },
+  "feature_filters": {
+    "event_id": "demo_feature_event"
+  },
+  "queue_log_filters": {
+    "topic": "demo_queue",
+    "app_name": "demo_app",
+    "module": "demo",
+    "event_id": "demo_event"
+  },
+  "product_code_hash": {
+    "PRODUCT_A,PRODUCT_B": 0,
+    "PRODUCT_B": 1,
+    "PRODUCT_A": 2
+  },
+  "h3_resolution": 7,
+  "sds_dedup": {
+    "enabled": false,
+    "keys": [
+      "dt",
+      "order_id",
+      "city_code"
+    ],
+    "order_by": "event_time",
+    "keep": "last"
+  }
+}

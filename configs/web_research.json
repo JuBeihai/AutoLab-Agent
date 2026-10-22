@@ -1,0 +1,25 @@
+{
+  "providers": [
+    "arxiv",
+    "bing",
+    "duckduckgo"
+  ],
+  "allowed_domains": null,
+  "timeout_seconds": 8,
+  "budget_seconds": 90,
+  "max_sources": 5,
+  "max_papers": 3,
+  "max_bytes": 1000000,
+  "excerpt_chars": 1800,
+  "cache_hours": 24,
+  "refresh_every_steps": 3,
+  "max_research_calls": 3,
+  "xgboost_docs_version": "release_2.1.0",
+  "socks_proxy": "",
+  "read_full_text": true,
+  "max_full_texts": 2,
+  "max_download_bytes": 12000000,
+  "max_pdf_pages": 40,
+  "max_text_chars": 200000,
+  "pdf_timeout_seconds": 15
+}

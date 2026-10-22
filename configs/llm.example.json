@@ -1,0 +1,30 @@
+{
+  "endpoint": "https://api.example.com/v1/chat/completions",
+  "model": "YOUR_CHAT_MODEL",
+  "protocol": "chat_completions",
+  "api_key_env": "ETS_LLM_API_KEY",
+  "max_tokens": 8000,
+  "temperature": 0.3,
+  "top_p": 0.9,
+  "timeout_sec": 300,
+  "max_retries": 2,
+  "retry_backoff_sec": 5,
+  "default_profile": "chat",
+  "profiles": {
+    "chat": {
+      "label": "Chat API（自行配置）",
+      "endpoint": "https://api.example.com/v1/chat/completions",
+      "model": "YOUR_CHAT_MODEL",
+      "protocol": "chat_completions",
+      "api_key_env": "ETS_LLM_API_KEY"
+    },
+    "responses": {
+      "label": "Responses API（自行配置）",
+      "endpoint": "https://api.example.com/v1/responses",
+      "model": "YOUR_RESPONSES_MODEL",
+      "protocol": "responses",
+      "api_key_env": "ETS_GPT_API_KEY",
+      "api_key_fallback_env": "ETS_LLM_API_KEY"
+    }
+  }
+}

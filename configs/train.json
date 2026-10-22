@@ -1,0 +1,52 @@
+{
+  "non_queue_strategy": "unified",
+  "queue_rule": "has_queue",
+  "non_queue_after_ordering": "model",
+  "training_method": "notebook_random",
+  "xgboost": {
+    "n_estimators": 600,
+    "early_stopping_rounds": 40,
+    "learning_rate": 0.01,
+    "max_depth": 6,
+    "subsample": 0.8,
+    "objective": "multi:softmax",
+    "n_jobs": 4,
+    "reg_alpha": 4.0,
+    "reg_lambda": 2.0,
+    "random_state": 123,
+    "eval_metric": "auc",
+    "tree_method": "hist",
+    "max_bin": 32
+  },
+  "class_weight": {
+    "scheme": "balanced_sqrt",
+    "penalty_multipliers": {
+      "0": 1.0,
+      "1": 1.0,
+      "2": 1.0,
+      "3": 1.0,
+      "4": 1.0,
+      "5": 1.0
+    }
+  },
+  "split": {
+    "queue_eval_ratio": 0.1,
+    "no_queue_eval_ratio": 0.25,
+    "seed": 123
+  },
+  "training_filters": {
+    "queue": {
+      "require_is_answer": true
+    },
+    "no_queue": {
+      "require_is_answer": false
+    }
+  },
+  "save": {
+    "required_xgb_version": "2.1.4",
+    "write_md5": true,
+    "write_meta": true,
+    "strict_version": true
+  },
+  "training_population": "unified"
+}

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "data_contract": "notebook_xgb43_6_queue_flag_zero_after_ordering_v1",
+  "max_rows": 250000,
+  "profile_rows": 50000,
+  "max_discovered_fields": 160,
+  "max_features_per_proposal": 4,
+  "max_total_features": 24,
+  "max_missing_rate": 0.95,
+  "history_days": [
+    1,
+    3,
+    7,
+    14,
+    28
+  ],
+  "rolling_minutes": [
+    5,
+    15,
+    30,
+    60
+  ],
+  "history_min_count": 5,
+  "max_inspection_calls": 4,
+  "inspection_rows": 20000,
+  "inspection_timeout_seconds": 60,
+  "importance_features": 6,
+  "importance_rows": 512,
+  "reference_tables": [
+    "demo.orders",
+    "demo.features",
+    "demo.queue_events"
+  ],
+  "notes": "Synthetic demonstration only. No production schemas, records or database adapter are included."
+}

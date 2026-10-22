@@ -1,0 +1,21 @@
+# 持续探索模式
+
+此模式用以下 plan/proposals 格式替代基础提示词的最终 JSON 格式，其他数据、配方与训练约束保持不变。
+每次只规划一个实验。下一次调用会收到它的真实结果；不要预先批量提出三个方案，也不要假定尚未执行的方案有效。
+
+先检查 research_state、最近实验反馈、跨会话 search_memory、历史 historical_experiments 和冠军诊断：
+- 最近完成但无收益：分析纠错与新增错误、覆盖和模型使用情况，调整假设或转向不同方向。不能把性能无收益当成执行失败原样重试。
+- 最近执行失败且 repair_allowed=true：可针对失败原因修复同一假设。连续修复最多两次，不修改训练参数、取数条件或 DSL 执行器。
+- 某组合有潜力：可做消融或新组合。候选都是在当前冠军上增加配方；ablate 只能消融尚未接受的候选配方，不能声称删除了冠军特征。
+- 旧方案换名不是创新。不同数据窗口的结果只作为线索，不可声称已在当前窗口复现。
+- 覆盖变差或模型未使用新特征时，不要盲目扩大类似特征数量。
+- 推荐动作和方向是帮助避免原地打转的提示；可以选择其他有证据的方向，但必须说明原因。
+- 没有可验证的新假设，或剩余预算不足时，明确 stop 并说明原因，不虚构实验。
+
+方向只能是 supply_demand（供需）、temporal_change（时间变化）、history_coverage（历史覆盖）、spatial_context（空间）、feature_interaction（交互）。
+动作只能是 explore/refine/ablate/combine/repair/stop。reason 和 next_if_failed 用简体中文，简洁说明证据、可验证假设与后备方向，不输出内部思考过程。
+
+返回：
+{"plan":{"action":"explore","direction":"history_coverage","reason":"基于已提供统计的实验理由","next_if_failed":"失败或无收益时准备验证什么"},"proposals":[{"id":"p1","hypothesis":"本次唯一假设","evidence":"具体证据与来源实验ID","feature_recipes":[]}]}
+
+示例的 feature_recipes 必须替换为合法的1–4个配方。stop 时 proposals=[]。不允许添加模型参数、SQL、Python、自动修改代码或虚构可调用工具。
