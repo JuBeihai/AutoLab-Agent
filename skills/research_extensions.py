@@ -139,10 +139,10 @@ def requests(root, session_id=None):
 
 
 def sandbox_info():
-    image = os.environ.get('ETS_RESEARCH_SANDBOX_IMAGE', '')
+    image = os.environ.get('AUTOLAB_RESEARCH_SANDBOX_IMAGE', '')
     executable = shutil.which('docker')
     if not executable or not re.fullmatch(r'[a-zA-Z0-9./:_-]+@sha256:[a-f0-9]{64}', image):
-        raise RuntimeError('代码执行关闭：需要 rootless Docker 和本地已准备、以 sha256 固定的 ETS_RESEARCH_SANDBOX_IMAGE')
+        raise RuntimeError('代码执行关闭：需要 rootless Docker 和本地已准备、以 sha256 固定的 AUTOLAB_RESEARCH_SANDBOX_IMAGE')
     result = subprocess.run([executable, 'info', '--format', '{{json .}}'],
                             capture_output=True, text=True, timeout=10, check=True)
     info = json.loads(result.stdout)

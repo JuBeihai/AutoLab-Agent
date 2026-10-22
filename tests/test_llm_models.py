@@ -31,7 +31,7 @@ def terminal(text='完整回答', status='completed', reason=None):
 
 class LLMModelTests(unittest.TestCase):
     def setUp(self):
-        environment = patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-shared', 'ETS_GPT_API_KEY': 'test-gpt'})
+        environment = patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-shared', 'AUTOLAB_GPT_API_KEY': 'test-gpt'})
         environment.start()
         self.addCleanup(environment.stop)
         self.config = {**llm_profiles.resolve(CONFIG, 'responses'), 'max_retries': 0}
@@ -48,7 +48,7 @@ class LLMModelTests(unittest.TestCase):
 
     def test_gpt_key_precedence_and_shared_fallback(self):
         self.assertEqual(LLMClient(self.config)._api_key, 'test-gpt')
-        with patch.dict(os.environ, {'ETS_GPT_API_KEY': ''}):
+        with patch.dict(os.environ, {'AUTOLAB_GPT_API_KEY': ''}):
             self.assertEqual(LLMClient(self.config)._api_key, 'test-shared')
         self.assertEqual(LLMClient(llm_profiles.resolve(CONFIG, 'chat'))._api_key, 'test-shared')
 

@@ -36,5 +36,5 @@
 
   const controls = { detectRunIntent, buildRunConfig };
   if (typeof module !== "undefined" && module.exports) module.exports = controls;
-  else root.ETSControls = controls;
+  else root.AutoLabControls = controls;
 })(globalThis);

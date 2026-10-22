@@ -102,7 +102,7 @@ class LoopTests(unittest.TestCase):
 
 class ToolModelTests(unittest.TestCase):
     def model(self, protocol):
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test'}):
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test'}):
             return ToolModel({'model': 'test', 'endpoint': 'https://example.com', 'protocol': protocol, 'max_retries': 0})
 
     def test_responses_preserves_calls_and_reasoning_for_replay(self):

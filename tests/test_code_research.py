@@ -35,7 +35,7 @@ class CodeResearchTests(unittest.TestCase):
             model = FakeModel([
                 reply([('write_file', {'path': 'method.py', 'content': 'assert 1 + 1 == 2'})]),
                 reply([('run_file', {'path': 'method.py', 'timeout_seconds': 10})]),
-                reply(text='小型计算已验证；不代表ETS真实效果提升')])
+                reply(text='小型计算已验证；不代表等待时间真实效果提升')])
             session = er.ExperimentResearchSession(root, Path(root) / 'reports/S1', {})
             with patch.object(ra, 'ToolModel', return_value=model), patch('skills.code_workspace.run_file', return_value={
                     'status': 'success', 'exit_code': 0, 'stdout': '', 'run_id': 'check1'}):

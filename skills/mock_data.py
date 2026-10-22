@@ -143,11 +143,11 @@ def generate_mock_merged(
         sp2_queue_count = rng.poisson(2, n).astype(float)
         grid_rank = rng.integers(1, 20, n).astype(float)
 
-        # 生成真实 ETS（依赖 hour/city/queue/supply-demand）
+        # 生成真实 等待时间（依赖 hour/city/queue/supply-demand）
         true_ets_sec = _generate_true_ets_seconds(
             hour, city, supply_demand, sp1_queue_count, rng)
 
-        # 应答/取消：真实 ETS 越长越可能取消
+        # 应答/取消：真实 等待时间 越长越可能取消
         cancel_prob = np.clip((true_ets_sec / 60 - 5) / 20, 0.05, 0.4)
         is_cancel = rng.random(n) < cancel_prob
         match_times = [
@@ -159,7 +159,7 @@ def generate_mock_merged(
             for ct, e, c in zip(create_times, true_ets_sec, is_cancel)
         ]
 
-        # 规则模型（base_pred_bin）：真实 ETS 加噪声 + 系统性高估
+        # 规则模型（base_pred_bin）：真实 等待时间 加噪声 + 系统性高估
         base_pred_sec = true_ets_sec * rng.lognormal(0.1, 0.4, n)  # 中位偏高一点
         # origin_ert_result 是"规则先验" 的秒数（未保序）
         origin_ert_sec = base_pred_sec

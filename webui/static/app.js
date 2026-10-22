@@ -1,4 +1,4 @@
-// ETS Agent 控制台前端逻辑
+// AutoLab Agent 控制台前端逻辑
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => document.querySelectorAll(sel);
@@ -362,7 +362,7 @@ function appendChatMessage(role, text, sessionId = state.sessionId, parent = nul
   }
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble${role === 'assistant' ? ' markdown-body' : ''}`;
-  if (role === 'assistant') bubble.innerHTML = ETSMarkdown.render(text);
+  if (role === 'assistant') bubble.innerHTML = AutoLabMarkdown.render(text);
   else bubble.textContent = text;
   content.appendChild(header);
   content.appendChild(bubble);
@@ -918,7 +918,7 @@ function renderReproduction(info) {
     ${verification.map(text => `<p><b>${escapeHTML(text)}</b></p>`).join('')}
     <p>激活匹配的 Python 环境后，在当前部署服务器运行（默认从头训练）：</p>
     <pre>${escapeHTML(info.command)}</pre><button type="button" id="copy-reproduction-command">复制复现命令</button>
-    <p class="hint">也可通过 ETS_PYTHON 指定解释器。加 --mode evaluate 只回读原模型评估。命令会校验文件、依赖版本、逐单预测和历史指标；不一致时退出码非零，原模型不会被覆盖。</p>
+    <p class="hint">也可通过 AUTOLAB_PYTHON 指定解释器。加 --mode evaluate 只回读原模型评估。命令会校验文件、依赖版本、逐单预测和历史指标；不一致时退出码非零，原模型不会被覆盖。</p>
     <p>迁移服务器：保留该会话目录中的实验文件夹及共享的 _reproduction 文件夹。在新项目根目录运行：</p>
     <pre>${escapeHTML(info.portable_command)}</pre>
     <table><tbody>${row('复现入口', info.entrypoint)}${row('冻结的对应代码目录', info.source_directory)}
@@ -1857,7 +1857,7 @@ async function handleChatSend() {
 
   const intent = detectRunIntent(text);
   if (intent) {
-    const config = ETSControls.buildRunConfig(intent, runConfig());
+    const config = AutoLabControls.buildRunConfig(intent, runConfig());
     // Chat intents may override mock; do not carry an offline snapshot into mock runs.
     if (config.mock) config.snapshot_id = null;
     else if (config.data_source === 'offline') config.snapshot_id = $('#snapshot-id').value;
@@ -2138,7 +2138,7 @@ async function interruptAgent() {
 
 $('#btn-interrupt-agent').addEventListener('click', interruptAgent);
 
-const detectRunIntent = ETSControls.detectRunIntent;
+const detectRunIntent = AutoLabControls.detectRunIntent;
 
 $('#btn-restore-chat').addEventListener('click', () => {
   const target = conversation();

@@ -21,7 +21,7 @@ from skills.runtime_memory import memory_snapshot, require_available_memory
 
 
 _ROOT = Path(__file__).resolve().parent.parent
-_PYTHON = os.environ.get("ETS_PYTHON", sys.executable)
+_PYTHON = os.environ.get("AUTOLAB_PYTHON", sys.executable)
 _MAX_HISTORY_BYTES = 2 * 1024 * 1024
 _MAX_HISTORY_LINES = 2000
 _MAX_FINISHED_JOBS = 12
@@ -241,13 +241,13 @@ def start_orchestrator(rounds: int, max_proposals: int, mock: bool,
         cmd.append("--no-agent")
 
     env = os.environ.copy()
-    env['ETS_PYTHON'] = _PYTHON
+    env['AUTOLAB_PYTHON'] = _PYTHON
     if extra_env:
         env.update({k: str(v) for k, v in extra_env.items() if v is not None})
 
     job_id = f"job_{uuid.uuid4().hex[:8]}"
     job = Job(job_id=job_id, cmd=cmd)
-    job.secrets = tuple(env[name] for name in ('ETS_DP_KEY', 'ETS_LLM_API_KEY', 'ETS_GPT_API_KEY') if env.get(name))
+    job.secrets = tuple(env[name] for name in ('AUTOLAB_DP_KEY', 'AUTOLAB_LLM_API_KEY', 'AUTOLAB_GPT_API_KEY') if env.get(name))
 
     with _jobs_lock:
         for existing in _jobs.values():

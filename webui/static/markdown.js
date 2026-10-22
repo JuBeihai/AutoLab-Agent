@@ -152,5 +152,5 @@
   }
 
   if (typeof module !== 'undefined' && module.exports) module.exports = { render };
-  else root.ETSMarkdown = { render };
+  else root.AutoLabMarkdown = { render };
 })(globalThis);

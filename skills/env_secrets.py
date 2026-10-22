@@ -1,4 +1,4 @@
-"""Secret access and validation for ETS integrations."""
+"""Secret access and validation for 等待时间 integrations."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def get_dp_key() -> str:
     raise SecretMissingError("演示版不支持生产数据凭证")
 
 
-def get_llm_api_key(name='ETS_LLM_API_KEY') -> str:
+def get_llm_api_key(name='AUTOLAB_LLM_API_KEY') -> str:
     """Read the user-configured LLM API key."""
     return _get_env(
         name,

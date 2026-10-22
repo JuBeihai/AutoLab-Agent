@@ -37,7 +37,7 @@ class WebResearchTests(unittest.TestCase):
         self.assertNotIn('steal secrets', r['sources'][0]['excerpt'])
         self.assertNotIn('ignore navigation', r['sources'][0]['excerpt'])
         self.assertEqual(len(list((self.root/'artifacts/web_research/runs').glob('*.json'))), 1)
-        self.assertTrue(all('ETS_DP_KEY' not in u for u in fetch.calls))
+        self.assertTrue(all('AUTOLAB_DP_KEY' not in u for u in fetch.calls))
 
     def test_cache_and_force_refresh(self):
         fetch = FakeFetcher(); wr.collect(self.root, fetcher=fetch)

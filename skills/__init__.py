@@ -1,4 +1,4 @@
-"""ETS Agent Lab - Skills 模块
+"""AutoLab Agent Lab - Skills 模块
 
 Agent 通过白名单 Skill 与数据/模型交互，禁止直接写 SQL 或修改产模型。
 

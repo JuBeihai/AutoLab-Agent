@@ -145,7 +145,7 @@ def validate_notebook(text):
     if str(language).lower() != 'python': raise ValueError('仅支持Python Notebook')
     nb.setdefault('nbformat_minor', 5)
     nb.setdefault('metadata', {})
-    nb['metadata']['kernelspec'] = {'name': 'python3', 'display_name': 'Python 3 (ETS)', 'language': 'python'}
+    nb['metadata']['kernelspec'] = {'name': 'python3', 'display_name': 'Python 3 (AutoLab)', 'language': 'python'}
     for c in nb['cells']:
         if not isinstance(c, dict) or c.get('cell_type') not in ('code', 'markdown', 'raw'):
             raise ValueError('Notebook单元类型无效')

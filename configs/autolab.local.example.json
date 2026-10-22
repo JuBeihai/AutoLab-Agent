@@ -1,0 +1,6 @@
+{
+  "task": {"kind": "regression", "dataset": "local_csv", "file": "example.csv", "target": "target", "metric": "mae", "split": "random", "seed": 42},
+  "models": ["linear", "xgb", "random_forest"],
+  "rounds": 3, "trials_per_round": 2, "patience": 6, "minutes": 30,
+  "planner": "builtin", "web_research": false
+}

@@ -25,7 +25,7 @@ TOPICS = {
         'query': '"travel time estimation" "LibCity"',
         'arxiv': 'ti:"travel time estimation" OR ti:DeepTTE OR (ti:LibCity AND all:traffic)',
         'terms': ['travel time', 'estimation', 'trajectory', 'LibCity', 'DeepTTE'],
-        'questions': ['论文的预测对象、数据集和开源实现是否适用于当前 ETS？行程时间预测不等同于排队等待时长，需验证后再迁移。']},
+        'questions': ['论文的预测对象、数据集和开源实现是否适用于当前 等待时间？行程时间预测不等同于排队等待时长，需验证后再迁移。']},
     'regularization': {'label': 'XGBoost 正则化与树复杂度',
         'query': 'XGBoost regularization max_depth min_child_weight tabular classification',
         'arxiv': 'ti:xgboost OR (all:"gradient boosting" AND (ti:regularization OR ti:optimization))',
@@ -76,8 +76,8 @@ DIRECTION_TOPICS = {'missing_encoding': 'missing_encoding', 'feature_selection':
 def load_config(root):
     path = Path(root) / 'configs/web_research.json'
     config = json.loads(path.read_text()) if path.exists() else {}
-    if 'ETS_WEB_RESEARCH_SOCKS_PROXY' in os.environ:
-        config['socks_proxy'] = os.environ['ETS_WEB_RESEARCH_SOCKS_PROXY']
+    if 'AUTOLAB_WEB_RESEARCH_SOCKS_PROXY' in os.environ:
+        config['socks_proxy'] = os.environ['AUTOLAB_WEB_RESEARCH_SOCKS_PROXY']
     return validate_config(config)
 
 
@@ -183,7 +183,7 @@ class PublicFetcher:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise ResearchError('联网调研时间预算已用尽')
-            req = urllib.request.Request(url, headers={'User-Agent': 'ETS-WebResearch/1.0 (public academic research)',
+            req = urllib.request.Request(url, headers={'User-Agent': 'AutoLab-WebResearch/1.0 (public academic research)',
                                                       'Accept': 'text/html,application/pdf,application/atom+xml,application/xml,text/plain'})
             try:
                 response = self.opener.open(req, timeout=min(self.cfg['timeout_seconds'], remaining))
@@ -345,7 +345,7 @@ def collect(root, topic='regularization', *, refresh=False, config=None, fetcher
               'collected_epoch': time.time(), 'config_signature': signature, 'cached': False,
               'status': 'unavailable', 'sources': [], 'searches': [], 'errors': [],
               'research_questions': spec['questions'], 'model_synthesis': False,
-              'note': '外部资料仅提供假设，未验证 ETS 收益。每条来源区分摘要、正文片段和未能提取的下载文件；正文提取范围与截断明确标记。模型仅接收所列片段，不代表逐字阅读全部原文。'}
+              'note': '外部资料仅提供假设，未验证 等待时间 收益。每条来源区分摘要、正文片段和未能提取的下载文件；正文提取范围与截断明确标记。模型仅接收所列片段，不代表逐字阅读全部原文。'}
     fetcher = fetcher or PublicFetcher(cfg)
     deadline = time.monotonic() + cfg['budget_seconds']
     # Fetch official references first, then search current papers. Neither receives internal context.

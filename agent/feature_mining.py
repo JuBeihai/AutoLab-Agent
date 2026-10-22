@@ -49,14 +49,14 @@ def emit_event(event_type, session_id, **payload):
 
 
 def load_env():
-    env = Path(os.environ.get("ETS_SECRETS_FILE", str(ROOT / ".env")))
+    env = Path(os.environ.get("AUTOLAB_SECR等待时间_FILE", str(ROOT / ".env")))
     if not env.exists(): return
     if env.stat().st_mode & 0o777 != 0o600: raise ValueError(".env 权限必须为 600")
     for line in env.read_text().splitlines():
         line = line.strip()
         if line.startswith("export "): line = line[7:]
         k, sep, v = line.partition("=")
-        if sep and k in {"ETS_DP_KEY", "ETS_LLM_API_KEY", "ETS_GPT_API_KEY"} and not os.environ.get(k):
+        if sep and k in {"AUTOLAB_DP_KEY", "AUTOLAB_LLM_API_KEY", "AUTOLAB_GPT_API_KEY"} and not os.environ.get(k):
             os.environ[k] = v.strip().strip("\"'")
 
 
@@ -573,7 +573,7 @@ def main(argv=None):
             progress('proposing', f'第 {round_id}/{iteration_budget} 次规划：Agent 正在根据最新结果生成下一项实验，请等待模型响应',
                      round_id=round_id)
             from agent.orchestrator import _consume_user_hint
-            hint = _consume_user_hint(Path(os.environ.get("ETS_WEBUI_STATE_DIR", str(ROOT / "webui/state"))))
+            hint = _consume_user_hint(Path(os.environ.get("AUTOLAB_WEBUI_STATE_DIR", str(ROOT / "webui/state"))))
             if controller is not None:
                 active_hint = hint or active_hint
                 hint = active_hint
@@ -834,7 +834,7 @@ def main(argv=None):
         if "whitelist" in str(exc).lower():
             manifest["error_hint"] = "HDFS 拒绝当前服务器 IP；请完成白名单授权后重跑真实数据画像"
         elif type(exc).__name__ == "SecretMissingError":
-            manifest["error_hint"] = "缺少 ETS 凭证；检查环境变量或权限为 600 的 .env"
+            manifest["error_hint"] = "缺少 API 凭证；检查环境变量或权限为 600 的 .env"
         elif isinstance(exc, (MemoryBudgetError, LLMEmptyContentError)):
             manifest['error_hint'] = str(exc)
         # Spark exception text may contain SQL/credentials. Keep detailed vendor errors out of stdout.

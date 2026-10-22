@@ -209,7 +209,7 @@ def render_narrative_template(innovation: dict,
 def _load_summarizer_prompt(root: Path) -> str:
     p = root / "agent/prompts/summarizer.txt"
     if not p.exists():
-        return "你是 ETS 实验总结助手，用 4-6 句中文说明创新点、delta、判定与下一步建议。"
+        return "你是 等待时间 实验总结助手，用 4-6 句中文说明创新点、delta、判定与下一步建议。"
     return p.read_text(encoding="utf-8")
 
 

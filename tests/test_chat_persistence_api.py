@@ -30,7 +30,7 @@ class PersistenceApiTests(unittest.TestCase):
         body = {'question': '完整问题' * 1000, 'session_id': self.current_id,
                 'request_id': 'persist_request_00001', 'background': True, 'history': []}
         answer = '完整回复' * 5000
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch.object(chat_jobs, '_jobs', {}), patch.object(chat_jobs, '_workers', set()), \
              patch('webui.app.chat_requests.run', return_value=SimpleNamespace(text=answer, usage={}, finish_reason='length')) as model:
             self.assertEqual(self.client.post('/api/chat', json=body).status_code, 202)
@@ -39,7 +39,7 @@ class PersistenceApiTests(unittest.TestCase):
             # Clearing process-memory jobs simulates restart; disk is authoritative.
             chat_jobs._jobs.clear()
             self.assertEqual(self.client.get('/api/chat/' + body['request_id']).get_json()['result']['answer'], answer)
-            with patch.dict(os.environ, {'ETS_LLM_API_KEY': ''}):
+            with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': ''}):
                 retry = self.client.post('/api/chat', json=body)
             self.assertEqual(retry.status_code, 202); self.assertEqual(model.call_count, 1)
             transcript = self.client.get('/api/sessions/' + self.current_id + '/chat').get_json()
@@ -50,7 +50,7 @@ class PersistenceApiTests(unittest.TestCase):
             self.assertEqual(self.client.post('/api/chat', json={**body, 'question': 'changed'}).status_code, 409)
 
     def test_storage_failure_prevents_model_and_delete_archives_transcript(self):
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch.object(chat_store, '_save', side_effect=OSError('disk full')), \
              patch('skills.llm_client.LLMClient') as model:
             response = self.client.post('/api/chat', json={'question': 'test', 'session_id': self.current_id})

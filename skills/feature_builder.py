@@ -13,7 +13,7 @@ import pandas as pd
 
 
 def compute_true_ets(df: pd.DataFrame, *, copy: bool = True) -> pd.DataFrame:
-    """计算真实 ETS 秒数 + is_answer 标记。
+    """计算真实 等待时间 秒数 + is_answer 标记。
 
     优先使用 match_time；缺失时用 cancel_time，与 example 一致。
     注意：这个口径把"取消"当成了"到 cancel_time 时才会应答"，
@@ -98,7 +98,7 @@ _BIN_EDGES_MIN = list(BIN_EDGES)
 
 
 def ets_bin(seconds) -> int:
-    """把 ETS 秒数映射到 0-5 档。"""
+    """把 等待时间 秒数映射到 0-5 档。"""
     if seconds is None or (isinstance(seconds, float) and np.isnan(seconds)):
         return -1
     minutes = float(seconds) / 60.0
@@ -111,7 +111,7 @@ def ets_bin(seconds) -> int:
 def add_bins(df: pd.DataFrame) -> pd.DataFrame:
     """加 true_bin / base_pred_bin / base_sorted_pred_bin 三列。
 
-    - true_bin: 真实 ETS 分箱
+    - true_bin: 真实 等待时间 分箱
     - base_pred_bin: 规则模型 origin_ert_result 分箱（诊断；新流程按 has_queue 路由）
     - base_sorted_pred_bin: 规则模型 ert_result（含保序）分箱
     """
@@ -128,7 +128,7 @@ def add_bins(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_full_features(df: pd.DataFrame,
                          h3_resolutions=(6, 7, 8)) -> pd.DataFrame:
-    """流水线：ETS + 峰期 + H3 多分辨率 + 分箱。
+    """流水线：等待时间 + 峰期 + H3 多分辨率 + 分箱。
 
     输入应该是 data_loader.merge_all() 的输出。
     如果 hour/is_weekday 等时间/峰期字段来自 SDS 表（真实数据/mock 都有），

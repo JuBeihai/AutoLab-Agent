@@ -53,7 +53,7 @@ class FileTests(unittest.TestCase):
         spawn.assert_not_called()
 
 
-@unittest.skipUnless(sys.platform == 'linux' and os.environ.get('ETS_TEST_CODE_EXECUTION') == '1', 'Opt-in cloud execution checks')
+@unittest.skipUnless(sys.platform == 'linux' and os.environ.get('AUTOLAB_TEST_CODE_EXECUTION') == '1', 'Opt-in cloud execution checks')
 class ExecutionTests(FileTests):
     def run_code(self, name, source, timeout=15):
         cw.write_file(self.root, 'S1', name, source)
@@ -64,7 +64,7 @@ class ExecutionTests(FileTests):
         source = f'''import os, socket, json
 from pathlib import Path
 import numpy as np
-assert 'ETS_TEST_PRIVATE' not in os.environ
+assert 'AUTOLAB_TEST_PRIVATE' not in os.environ
 assert not Path({str(secret)!r}).exists()
 assert not Path({str(Path(__file__).resolve().parents[1])!r}).exists()
 try:
@@ -79,7 +79,7 @@ except OSError: pass
 print('sum', int(np.arange(5).sum()))
 Path('metrics.json').write_text(json.dumps({{'sum':10}}))
 '''
-        with patch.dict(os.environ, {'ETS_TEST_PRIVATE': 'must-not-pass'}): result = self.run_code('calc.py', source)
+        with patch.dict(os.environ, {'AUTOLAB_TEST_PRIVATE': 'must-not-pass'}): result = self.run_code('calc.py', source)
         self.assertEqual(result['status'], 'success', result['stderr'])
         self.assertIn('sum 10', result['stdout'])
         self.assertTrue(any(f['path'].endswith('/metrics.json') for f in result['files']))

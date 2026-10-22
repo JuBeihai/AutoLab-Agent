@@ -1,0 +1,6 @@
+{
+  "task": {"kind": "regression", "dataset": "synthetic", "metric": "rmse", "seed": 42},
+  "models": ["linear", "xgb", "random_forest", "mlp"],
+  "rounds": 3, "trials_per_round": 2, "patience": 6, "minutes": 30,
+  "planner": "builtin", "web_research": false
+}

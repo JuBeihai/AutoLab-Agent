@@ -1,0 +1,6 @@
+{
+  "task": {"kind": "classification", "dataset": "synthetic", "metric": "accuracy", "seed": 42},
+  "models": ["xgb", "random_forest", "linear", "mlp"],
+  "rounds": 3, "trials_per_round": 2, "patience": 6, "minutes": 30,
+  "planner": "builtin", "web_research": false
+}

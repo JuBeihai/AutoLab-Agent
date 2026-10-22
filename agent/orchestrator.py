@@ -8,11 +8,11 @@ Round N (N≥1):
     4. 用 gate_check_records 与 champion 对比，写 experiments.jsonl
 
 使用：
-    export ETS_DP_KEY='<...>'
-    export ETS_LLM_API_KEY='<...>'
+    export AUTOLAB_DP_KEY='<...>'
+    export AUTOLAB_LLM_API_KEY='<...>'
     python agent/orchestrator.py --rounds 2 --max-proposals-per-round 3
 
-暂时不接入 LLM 时（无 ETS_LLM_API_KEY），可用 --no-agent 只跑 baseline。
+暂时不接入 LLM 时（无 AUTOLAB_LLM_API_KEY），可用 --no-agent 只跑 baseline。
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ from agent.identifiers import activity_lock
 # ================================================================
 
 def load_all_configs(root: Path) -> dict:
-    """加载 configs/*.json。JSON 而不是 YAML —— 服务器 ETS env 无 pyyaml。"""
+    """加载 configs/*.json。JSON 而不是 YAML —— 避免额外 YAML 依赖。"""
     def _load(name):
         with open(root / f"configs/{name}", "r", encoding="utf-8") as f:
             return json.load(f)
@@ -493,7 +493,7 @@ def run_one_experiment(
             prev_train_cfg=cfg["train"],
             llm_cfg=cfg.get("llm"),
             root=_ROOT,
-            use_llm=bool(os.environ.get("ETS_LLM_API_KEY")),
+            use_llm=bool(os.environ.get("AUTOLAB_LLM_API_KEY")),
         )
         record.summary = summary
         summarizer.write_summary_md(summary,

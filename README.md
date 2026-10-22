@@ -1,21 +1,35 @@
-# ETS Agent Demo
+# AutoLab Agent
 
-面向预计应答时间分桶预测的自动化实验 Agent。这个仓库是脱敏后的合成数据演示版本，用于展示研究编排与实验工程能力。
+**面向表格建模的自主实验 Agent：提出假设、训练模型、分析误差，再用实验结果规划下一轮。**
 
-**这里不包含生产数据、真实订单、内部数据接口、公司网络地址、历史实验成绩、训练权重、原始 Notebook、聊天记录或运行环境。所有示例区域、数据和参考阈值均为人工构造，不代表实际业务效果。**
+项目将任务定义、模型适配和实验编排分离。当前支持分类与回归，以及 XGBoost、Random Forest、MLP、Logistic Regression / Ridge；等待时间预测仅作为领域示例保留。
 
-## 功能
+仓库只包含源代码、人工配置和合成数据生成器，不包含公司数据、内部服务、历史实验成绩、训练权重、原始 Notebook 或运行记录。详细处理范围见 [SANITIZATION.md](SANITIZATION.md)。
 
-- 数据画像、误差切片、特征重要性和冗余诊断。
-- 大模型提出结构化特征配方，执行训练、评估、反馈和下一轮规划。
-- 受限特征 DSL：表达式、历史/滚动聚合、缺失处理、编码和消融。
-- XGBoost/MLP 对照、时间验证、多种子复验和概率融合。
-- 实验预算、方案去重、候选筛选、特征谱系与研究记忆。
-- Flask WebUI、流式任务进度、任务停止和实验详情。
-- 冻结输入、源代码和配置；离线重训与预测一致性校验。
-- 可选网页/论文研究与隔离代码工作区。
+## 实验闭环
 
-## 快速运行
+```mermaid
+flowchart LR
+    A[任务与固定数据划分] --> B[建立基线]
+    B --> C[研究公开方法 · 可选]
+    C --> D[规划下一次实验]
+    D --> E[训练与验证]
+    E --> F[误差诊断与特征消融]
+    F --> G{轮数与预算}
+    G -->|继续| C
+    G -->|结束| H[锁定方案 · 最终测试]
+```
+
+- **自主规划**：LLM 根据验证结果、误差切片、置换重要性和公开资料，提出结构化实验；执行器验证模型、参数与特征范围。
+- **多轮训练**：可配置轮数、每轮尝试次数、时间预算和连续无提升上限；比较模型、调整参数、做特征消融并更新最优方案。
+- **实验血缘**：每个候选记录父实验、实验假设、配置变化和指标差值；界面可查看真实生成的实验关系图。
+- **训练归因**：展示验证集置换重要性、分类错误切片或回归目标分位误差，以及父子实验对照；这些诊断不等同于因果解释。
+- **自主联网研究**：LLM 可选择关键词、搜索来源、阅读网页或论文并记录工具轨迹；通用训练入口只允许公开资料检索与阅读工具。
+- **可复现**：本地保存固定输入、划分、方案、代码哈希、依赖版本与预测；完成的实验可重训并校验预测一致性。
+
+无 API 时可使用**内置策略**完成真实训练和诊断。它是确定性的模型对照、调参和消融策略，不是 LLM 推理。内置策略的可选联网功能按固定公开主题检索。
+
+## 快速开始
 
 使用 Python 3.12：
 
@@ -23,22 +37,30 @@
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-bash scripts/run_feature_mining.sh --mock --smoke --no-agent --model-family xgb
-bash scripts/run_feature_mining.sh --mock --smoke --no-agent --model-family mlp
 bash run_webui.sh
 ```
 
-浏览器访问 `http://127.0.0.1:5055`。界面默认使用合成数据。无 API 密钥时使用“仅跑 baseline”模式；命令行 `--smoke` 用更小规模验证流程。
+打开 `http://127.0.0.1:5055`。默认使用合成数据与内置策略，无需 API Key。页面可配置任务、模型、轮数与预算，并查看实验记录、血缘图、归因和研究资料。
 
-固定人工配方可验证完整候选实验链路，无需外部 API：
+命令行运行：
 
 ```bash
-bash scripts/run_feature_mining.sh --mock --smoke --rounds 1 --max-proposals-per-round 2 --proposal-file tests/smoke_proposals.json
+python -m autolab.cli --task classification --rounds 3 --trials-per-round 2
+python -m autolab.cli --config configs/autolab.regression.json
+python -m autolab.replay artifacts/autolab/<run_id>
 ```
 
-## 可选大模型配置
+macOS 如遇 XGBoost 的 OpenMP 加载问题，先执行 `source scripts/_python.sh`，再使用 `"$AUTOLAB_PYTHON"` 运行以上模块。WebUI 启动脚本自动处理该路径。
 
-复制 `.env.example` 为 `.env` 并设置文件权限为 `600`，填入自己的 API Key；运行 `scripts/configure_llm.py --help` 查看接口配置方法。仓库里的 `api.example.com` 和模型名均为无效占位符，必须自行配置。支持 Chat Completions 与 Responses 兼容接口。
+## 配置自己的任务
+
+将 CSV 放入被 Git 忽略的 `local_data/`，在页面选择“本地 CSV”，填写相对文件名和目标列。支持数值与类别输入，可选随机划分或按时间划分；时间列不作为输入特征，相同时间戳不会跨分区。文件限制为 50 MB、60–50,000 行、1–128 个输入字段。
+
+配置示例见 [分类任务](configs/autolab.classification.json)、[回归任务](configs/autolab.regression.json) 与 [本地 CSV 模板](configs/autolab.local.example.json)。CSV 模板不附带任何数据。
+
+分类指标为 accuracy / f1_macro，回归指标为 RMSE / MAE。训练、验证、测试比例约为 60/20/20；预处理仅拟合训练集，候选筛选只使用验证集，方案锁定后才评估最终测试集。轮数 × 每轮尝试次数是候选尝试上限，基线单独计算；无效或重复提案也消耗尝试预算。时间与停止请求在步骤边界检查，当前训练或网络请求可先完成。
+
+## 启用 LLM 与联网研究
 
 ```bash
 cp .env.example .env
@@ -46,34 +68,43 @@ chmod 600 .env
 python scripts/configure_llm.py --help
 ```
 
-普通文本、流式响应与原生工具调用的支持程度取决于提供方。联网研究和 LLM 实验会调用自己配置的服务。
+在 `.env` 中填写自己的 API Key，在 `configs/llm.json` 中配置 endpoint、model 与 profile，然后在页面选择 LLM 规划器。仓库的 `api.example.com` 与模型名是无效占位符。支持 Chat Completions / Responses 兼容接口，实际能力取决于提供方。
 
-## 目录
+通用规划器发送匿名特征 ID、聚合验证结果和公开资料片段，不发送原始数据行、字段名、目标值、文件路径或最终测试成绩。聚合指标仍会发送给所配置的服务；启用前应确认该服务适合处理你的实验信息。原始 CSV、字段映射、模型、日志及研究缓存仅保存在本地忽略目录中。
 
-| 目录 | 用途 |
+## 架构与扩展
+
+| 模块 | 职责 |
 | --- | --- |
-| `agent/` | 实验编排、研究控制、提示词与记录 |
-| `skills/` | 合成数据、特征、训练、评估、资料研究和复现 |
-| `webui/` | Flask API 与原生 HTML/CSS/JavaScript 界面 |
-| `configs/` | 人工示例配置和 API 占位模板 |
-| `tests/` | 合成夹具和回归测试 |
-| `scripts/` | 启动和配置工具 |
+| `autolab/tasks.py` | 任务契约、输入校验、数据划分与匿名特征映射 |
+| `autolab/models.py` | 模型注册、有限搜索空间、预处理与指标 |
+| `autolab/engine.py` | 规划、训练、诊断、最优方案与预算控制 |
+| `autolab/replay.py` | 校验输入、代码与依赖，重训对比预测 |
+| `webui/lab_api.py` | 独立训练进程、状态查询与停止 |
+| `webui/static/autolab.*` | 通用训练工作台 |
+| `skills/` | LLM 接口、资料检索、研究工具与领域示例能力 |
+| `agent/` | 等待时间领域示例的特征工程与实验流程 |
 
-## 边界与评估
+扩展模型可在 `autolab/models.py` 注册 `ModelAdapter`，定义分类/回归构造器、默认参数和允许的搜索空间，并按需扩展 `build()` 的构造逻辑。模型需兼容 sklearn 的 `fit` / `predict` 接口。新增任务类型还需要相应的数据、指标和诊断适配，当前并不直接支持任意图像、文本或大模型训练。
 
-这是单用户研究演示服务。生产数据库适配器和解密实现已经移除；线上读取会明确拒绝。部分底层离线快照接口仅保留扩展结构，仓库不提供任何快照。
+## 等待时间领域示例
 
-六桶边界示例为 1、5、10、20、30 分钟，评估包括准确桶、高估/低估及 H3 网格保序。普通特征搜索会复用测试窗口筛选候选，不能将该结果当作独立泛化效果；模型研究提供时间验证及多种子复验。所有合成数据成绩只证明演示流程能够执行。
+访问 `/examples/wait-time` 查看保留的领域工作台，包括特征 DSL、时间验证、多种子复验、概率融合、研究记忆和隔离代码工作区。
 
-PDF 正文提取需 Linux 与 Poppler（`pdftotext`）；macOS 保留原文件并提示不可提取，网页正文不受影响。
+```bash
+bash scripts/run_feature_mining.sh --mock --smoke --no-agent --model-family xgb
+bash scripts/run_feature_mining.sh --mock --smoke --rounds 1 --max-proposals-per-round 2 --proposal-file tests/smoke_proposals.json
+```
 
-隔离代码执行依赖 Linux 和相应沙箱配置；缺少隔离能力时拒绝执行。运行产生的模型、实验、日志、研究材料和本地数据均由 `.gitignore` 排除。复现仅覆盖已冻结的特征输入及后续训练/评估，不会重新取数或重新调用 LLM。
+该示例只使用人工数据，生产数据库和解密实现已移除。其旧版普通特征搜索会复用测试窗口选择候选，相关成绩不能作为独立泛化结果；通用工作台采用上文的独立最终测试流程。
 
-## 测试
+## 验证与运行边界
 
 ```bash
 python -m unittest discover -s tests -p 'test_*.py'
 node --test tests/*.js
 ```
 
-发布副本的具体脱敏范围见 [SANITIZATION.md](SANITIZATION.md)。
+本项目是默认监听本机的单用户研究工具。通用实验产物保存在 `artifacts/autolab/`；复现需要相同代码与依赖版本，使用冻结输入重训，不重新取数或调用 LLM。合成数据成绩仅证明流程可执行，不代表业务效果。
+
+PDF 正文提取需要 Linux 与 Poppler；macOS 可保留文件并提示提取限制。领域示例的隔离代码执行需要 Linux 和相应沙箱，缺少隔离能力时拒绝执行。

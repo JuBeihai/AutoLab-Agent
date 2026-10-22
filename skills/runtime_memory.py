@@ -66,11 +66,11 @@ def memory_snapshot(root=Path('/sys/fs/cgroup')):
 def require_available_memory(environment=None):
     environment = os.environ if environment is None else environment
     try:
-        minimum = float(environment.get('ETS_MIN_AVAILABLE_MEMORY_GB', '6'))
+        minimum = float(environment.get('AUTOLAB_MIN_AVAILABLE_MEMORY_GB', '6'))
         if not math.isfinite(minimum) or minimum < 0:
             raise ValueError
     except (TypeError, ValueError):
-        raise RuntimeError('ETS_MIN_AVAILABLE_MEMORY_GB 必须是非负有限数字') from None
+        raise RuntimeError('AUTOLAB_MIN_AVAILABLE_MEMORY_GB 必须是非负有限数字') from None
     snapshot = memory_snapshot()
     if snapshot and snapshot['available_bytes'] < minimum * 1024 ** 3:
         available = snapshot['available_bytes'] / 1024 ** 3

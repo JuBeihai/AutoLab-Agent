@@ -210,10 +210,10 @@ class ExtensionTests(unittest.TestCase):
     def test_sandbox_requires_pinned_image_and_rootless_runtime(self):
         image = 'local/python@sha256:' + 'a' * 64
         with patch.object(extensions.shutil, 'which', return_value='/bin/docker'), \
-             patch.dict(extensions.os.environ, {'ETS_RESEARCH_SANDBOX_IMAGE': 'python:latest'}), self.assertRaises(RuntimeError):
+             patch.dict(extensions.os.environ, {'AUTOLAB_RESEARCH_SANDBOX_IMAGE': 'python:latest'}), self.assertRaises(RuntimeError):
             extensions.sandbox_info()
         with patch.object(extensions.shutil, 'which', return_value='/bin/docker'), \
-             patch.dict(extensions.os.environ, {'ETS_RESEARCH_SANDBOX_IMAGE': image}), \
+             patch.dict(extensions.os.environ, {'AUTOLAB_RESEARCH_SANDBOX_IMAGE': image}), \
              patch.object(extensions.subprocess, 'run', return_value=Mock(stdout='{"SecurityOptions":["seccomp"]}')), self.assertRaises(RuntimeError):
             extensions.sandbox_info()
 
@@ -252,7 +252,7 @@ class ExtensionTests(unittest.TestCase):
         info = {'SecurityOptions': ['name=rootless'], 'CgroupVersion': '2',
                 'MemoryLimit': True, 'CpuCfsQuota': True, 'PidsLimit': False}
         with patch.object(extensions.shutil, 'which', return_value='/bin/docker'), \
-             patch.dict(extensions.os.environ, {'ETS_RESEARCH_SANDBOX_IMAGE': image}), \
+             patch.dict(extensions.os.environ, {'AUTOLAB_RESEARCH_SANDBOX_IMAGE': image}), \
              patch.object(extensions.subprocess, 'run', return_value=Mock(stdout=json.dumps(info))), self.assertRaises(RuntimeError):
             extensions.sandbox_info()
 

@@ -22,6 +22,6 @@ def public(config):
 
 
 def key_env(config):
-    primary = config.get('api_key_env', 'ETS_LLM_API_KEY')
+    primary = config.get('api_key_env', 'AUTOLAB_LLM_API_KEY')
     fallback = config.get('api_key_fallback_env')
     return primary if os.environ.get(primary, '').strip() or not fallback else fallback

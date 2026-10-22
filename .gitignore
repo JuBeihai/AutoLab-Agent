@@ -47,3 +47,7 @@ notebooks/
 *.jsonl
 configs/kernel_env.sh
 .id_migration_backups/
+
+# User datasets and local run exports
+local_data/
+.autolab/

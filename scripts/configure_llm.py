@@ -19,10 +19,10 @@ def configure(path, *, endpoint, model, protocol='chat_completions', profile='cu
     cfg = json.loads(path.read_text())
     cfg.setdefault('profiles', {})[profile] = {
         'label': label or model, 'model': model, 'protocol': protocol,
-        'endpoint': endpoint, 'api_key_env': 'ETS_LLM_API_KEY',
+        'endpoint': endpoint, 'api_key_env': 'AUTOLAB_LLM_API_KEY',
     }
     cfg.update(default_profile=profile, endpoint=endpoint, model=model, protocol=protocol,
-               api_key_env='ETS_LLM_API_KEY')
+               api_key_env='AUTOLAB_LLM_API_KEY')
     cfg.pop('api_key_fallback_env', None)
     import sys
     sys.path.insert(0, str(ROOT))
@@ -43,7 +43,7 @@ def main():
     p.add_argument('--label')
     configured = configure(ROOT/'configs/llm.json', **vars(p.parse_args()))
     print(json.dumps(configured, ensure_ascii=False, indent=2))
-    print('配置已更新；密钥请填写 .env 中的 ETS_LLM_API_KEY。重启服务后在前端选择此模型。')
+    print('配置已更新；密钥请填写 .env 中的 AUTOLAB_LLM_API_KEY。重启服务后在前端选择此模型。')
 
 
 if __name__ == '__main__':

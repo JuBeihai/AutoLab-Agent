@@ -33,7 +33,7 @@ class ChatSearchTests(unittest.TestCase):
         body = {'question': '那篇论文再深入看看', 'session_id': self.current_id,
                 'request_id': request_id, 'background': True}
         with patch.object(chat_jobs, '_jobs', {}), patch.object(chat_jobs, '_workers', set()), \
-             patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+             patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch('webui.app.chat_research.plan') as old_plan, \
              patch('webui.app.chat_requests.run', return_value=SimpleNamespace(text='依据正文', usage={}, finish_reason='stop', web_research=report)) as model:
             self.assertEqual(self.client.post('/api/chat', json=body).status_code, 202)
@@ -55,7 +55,7 @@ class ChatSearchTests(unittest.TestCase):
             if chat_requests.is_cancelled(request_id): raise chat_requests.ChatCancelled()
             return SimpleNamespace(text='late', usage={}, finish_reason='stop')
         with patch.object(chat_jobs, '_jobs', {}), patch.object(chat_jobs, '_workers', set()), \
-             patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+             patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch('webui.app.chat_requests.run', side_effect=worker):
             self.client.post('/api/chat', json={'question': '研究公开论文', 'session_id': self.current_id,
                 'request_id': request_id, 'background': True})
@@ -67,7 +67,7 @@ class ChatSearchTests(unittest.TestCase):
             while chat_jobs._workers and time.monotonic()<deadline: time.sleep(.01)
 
     def test_plain_chat_still_enters_model_and_does_not_invent_research(self):
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch('webui.app.chat_research.plan') as old_plan, \
              patch('webui.app.chat_requests.run', return_value=SimpleNamespace(text='解释', usage={}, finish_reason='stop', web_research=None)) as model:
             result = self.client.post('/api/chat', json={'question': '解释准确率，不要联网', 'session_id': self.current_id}).get_json()
@@ -75,7 +75,7 @@ class ChatSearchTests(unittest.TestCase):
             old_plan.assert_not_called(); model.assert_called_once()
 
     def test_worker_error_is_explicit_and_not_rule_fallback(self):
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch('webui.app.chat_research.collect') as old_collect, \
              patch('webui.app.chat_requests.run', side_effect=RuntimeError('工具调用接口失败')):
             result = self.client.post('/api/chat', json={'question': '研究论文', 'session_id': self.current_id}).get_json()

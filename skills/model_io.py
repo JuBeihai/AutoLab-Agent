@@ -22,17 +22,17 @@ def ensure_xgb_version(required_version: str = "2.1.4",
     """检查 XGBoost 版本。
 
     - strict=True 时版本不一致会抛异常，用于产线保存/加载
-    - 环境变量 ETS_XGB_STRICT=0 时把 strict 强制降级为 False，
+    - 环境变量 AUTOLAB_XGB_STRICT=0 时把 strict 强制降级为 False，
       方便本地不同 XGB 版本调试（不改代码即可放宽）
     """
     import xgboost as xgb
-    if os.environ.get("ETS_XGB_STRICT", "").strip() == "0":
+    if os.environ.get("AUTOLAB_XGB_STRICT", "").strip() == "0":
         strict = False
     actual = xgb.__version__
     if actual != required_version:
         msg = (f"XGBoost 版本不匹配：当前={actual}，要求={required_version}。"
                f"请 pip install xgboost=={required_version} "
-               f"或 export ETS_XGB_STRICT=0 临时放宽。")
+               f"或 export AUTOLAB_XGB_STRICT=0 临时放宽。")
         if strict:
             raise XgbVersionMismatchError(msg)
         print(f"WARNING: {msg}")

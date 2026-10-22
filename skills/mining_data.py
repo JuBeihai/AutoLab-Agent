@@ -1,4 +1,4 @@
-"""Read-only ETS discovery with the ets_XGB44 notebook's sample semantics."""
+"""Read-only discovery for the synthetic waiting-time example."""
 from __future__ import annotations
 
 import gc

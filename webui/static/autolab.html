@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoLab Agent · 自主实验工作台</title><link rel="stylesheet" href="/autolab.css"></head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="/"><span class="brand-icon">A<span>•</span></span><span>AutoLab<span class="brand-sub">AGENT RESEARCH LAB</span></span></a>
+  <div class="side-label">WORKSPACE</div><button class="workspace-current" id="new-run">◉ <span>自主实验工作台</span><span>＋</span></button>
+  <div class="side-section"><span>最近实验会话</span><button id="refresh-runs" title="刷新会话" aria-label="刷新会话">↻</button></div>
+  <div id="run-list" class="run-list"><p class="side-empty">正在读取本地记录…</p></div>
+  <div class="sidebar-bottom"><a href="/examples/wait-time">↗ 等待时间预测示例</a><span>LOCAL WORKSPACE</span><p>数据与模型保存在本地<br>框架与业务任务分离</p></div>
+</aside>
+<main>
+  <header class="topbar"><div><span class="breadcrumb">工作空间</span><span class="slash">/</span>自主实验</div><span class="local-badge"><i></i>本地运行</span></header>
+  <section class="intro"><div><div class="eyebrow">AUTONOMOUS MODEL EXPERIMENTS</div><h1>从研究假设，到可验证的模型。</h1><p>规划实验、训练对照、分析误差，再让证据决定下一步。</p></div><a href="https://github.com/JuBeihai/AutoLab-Agent" target="_blank" rel="noreferrer" class="subtle-link">项目文档 ↗</a></section>
+  <div class="workspace-grid">
+    <section class="config-panel panel">
+      <div class="panel-heading"><h2>实验配置</h2><span class="small-label">TASK SPEC</span></div>
+      <form id="experiment-form">
+        <fieldset><legend>01 / 定义任务</legend>
+          <label>任务类型<select id="task-kind"><option value="classification">表格分类</option><option value="regression">表格回归</option></select></label>
+          <label>优化指标<select id="task-metric"><option value="accuracy">Accuracy · 越高越好</option><option value="f1_macro">Macro F1 · 越高越好</option></select></label>
+          <label>数据来源<select id="dataset"><option value="synthetic">合成数据 · 直接体验</option><option value="local_csv">本地 CSV · 自定义任务</option></select></label>
+          <div id="csv-fields" hidden><label>local_data/ 下的文件名<input id="dataset-file" placeholder="my_dataset.csv" maxlength="160"></label><label>目标列<input id="target-column" value="target" maxlength="160"></label><label>数据划分<select id="split"><option value="random">固定随机划分 60 / 20 / 20</option><option value="time">按时间划分 60 / 20 / 20</option></select></label><label id="time-field" hidden>时间列<input id="time-column" placeholder="created_at" maxlength="160"></label><p class="field-note">文件放入项目的 local_data/，不上传数据。时间列不会作为输入特征。</p></div>
+        </fieldset>
+        <fieldset><legend>02 / 允许探索的模型</legend><div class="model-options">
+          <label><input type="checkbox" name="model" value="xgb" checked><span>XGBoost</span><small>梯度提升</small></label>
+          <label><input type="checkbox" name="model" value="random_forest" checked><span>Random Forest</span><small>集成树</small></label>
+          <label><input type="checkbox" name="model" value="linear" checked><span>Logistic / Ridge</span><small>线性对照</small></label>
+          <label><input type="checkbox" name="model" value="mlp" checked><span>MLP</span><small>神经网络</small></label>
+        </div><p class="field-note">首个勾选模型建立基线，其余模型参与后续对照。</p></fieldset>
+        <fieldset><legend>03 / 自主规划与预算</legend>
+          <label>实验规划器<select id="planner"><option value="builtin">内置策略 · 无需 API</option><option value="llm">LLM Agent · 根据反馈规划</option></select></label>
+          <label id="llm-field" hidden>Agent 模型<select id="llm-profile"><option value="chat">Chat API</option></select></label>
+          <div class="two-fields"><label>实验轮数<input id="rounds" type="number" min="0" max="20" value="3"></label><label>每轮尝试<input id="trials" type="number" min="1" max="8" value="2"></label></div>
+          <div class="two-fields"><label>时间预算 / 分钟<input id="minutes" type="number" min="1" max="240" value="30"></label><label>无提升停止<input id="patience" type="number" min="1" max="100" value="6"></label></div>
+          <label class="toggle-row"><span><strong>自主联网研究</strong><small>每轮按诊断方向检索公开资料</small></span><input id="web-research" type="checkbox"></label>
+          <p class="field-note" id="budget-hint">1 次基线 + 最多 6 次候选尝试。实验轮数与模型内部训练迭代次数不同。</p>
+          <p class="field-note" id="privacy-note" hidden>LLM 会收到匿名特征 ID、聚合指标和诊断；不发送数据行、列名或文件路径。联网检索仅使用公开方法词。</p>
+        </fieldset>
+        <button class="primary" id="start" type="submit"><span>开始自主实验</span><span>↗</span></button>
+        <div class="form-error" id="form-error" role="alert"></div>
+      </form>
+    </section>
+    <section class="results">
+      <div class="run-heading"><div><span class="eyebrow" id="run-id">EXPERIMENT WORKSPACE</span><h2 id="run-title">新实验，等待你的第一个问题。</h2></div><button id="stop" class="secondary danger" hidden>停止实验</button></div>
+      <div class="pipeline" aria-label="实验闭环"><span>01 <b>研究与规划</b></span><i>→</i><span>02 <b>训练与评估</b></span><i>→</i><span>03 <b>归因与对照</b></span><i>↺</i><span>04 <b>反馈与迭代</b></span></div>
+      <div class="stat-grid"><div class="stat"><span>候选尝试</span><strong id="stat-attempts">—</strong><small id="stat-round">等待开始</small></div><div class="stat"><span>最优验证指标</span><strong id="stat-score">—</strong><small id="stat-model">尚未建立基线</small></div><div class="stat"><span>最终留出测试</span><strong id="stat-test">—</strong><small>锁定方案后仅评估一次</small></div></div>
+      <div class="progress-panel"><div><span class="status-dot" id="status-dot"></span><span id="stage" role="status">选择任务与预算，开始一组可追溯的实验。</span><span class="status-tag" id="status-tag">就绪</span></div><progress id="progress" max="1" value="0"></progress></div>
+      <section class="panel experiment-panel"><nav class="result-tabs" aria-label="实验结果"><button class="active" data-tab="experiments">实验记录 <span id="record-count">0</span></button><button data-tab="lineage">实验血缘</button><button data-tab="attribution">训练归因</button><button data-tab="research">联网研究 <span id="source-count">0</span></button></nav>
+        <div class="result-body" id="view-experiments"></div><div class="result-body" id="view-lineage" hidden></div><div class="result-body" id="view-attribution" hidden></div><div class="result-body" id="view-research" hidden></div>
+      </section>
+      <section class="panel timeline-panel"><div class="panel-heading"><h2>Agent 活动</h2><span class="small-label" id="planner-label">等待执行</span></div><div id="timeline" class="timeline"><p class="empty-inline">每一个提案、训练和评估步骤，都会留下记录。</p></div></section>
+      <p class="footer-note">验证集用于实验选择；留出测试不参与规划。归因展示可复核的对照与关联诊断，不把特征重要性解释为因果关系。</p>
+    </section>
+  </div>
+</main>
+<script src="/autolab.js"></script>
+</body></html>

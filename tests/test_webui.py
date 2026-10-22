@@ -179,7 +179,7 @@ class RunnerTests(unittest.TestCase):
     def test_runner_passes_model_selection_and_redacts_both_keys(self):
         runner._jobs.clear()
         with patch.object(runner.subprocess, 'Popen') as spawn, patch.object(runner.threading, 'Thread'), \
-             patch.dict(os.environ, {'ETS_LLM_API_KEY': 'shared-test-key', 'ETS_GPT_API_KEY': 'gpt-test-key'}):
+             patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'shared-test-key', 'AUTOLAB_GPT_API_KEY': 'gpt-test-key'}):
             job_id = runner.start_orchestrator(1, 1, True, False, llm_profile='responses')
         command = spawn.call_args.args[0]
         self.assertEqual(command[command.index('--llm-profile') + 1], 'responses')
@@ -198,7 +198,7 @@ class RunnerTests(unittest.TestCase):
         self.assertIn('--profile-only', command)
         self.assertIn('--no-agent', command)
         self.assertNotIn('--mock', command)
-        self.assertEqual(spawn.call_args.kwargs['env']['ETS_PYTHON'], runner._PYTHON)
+        self.assertEqual(spawn.call_args.kwargs['env']['AUTOLAB_PYTHON'], runner._PYTHON)
 
     def test_stopped_session_persists_without_changing_latest(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(runner, '_ROOT', Path(directory)):
@@ -222,8 +222,8 @@ class WebApiTests(unittest.TestCase):
     def setUpClass(cls):
         cls.runtime = tempfile.TemporaryDirectory()
         cls.addClassCleanup(cls.runtime.cleanup)
-        with patch.dict(os.environ, {'ETS_WEBUI_STATE_DIR': cls.runtime.name + '/state',
-                                     'ETS_WEBUI_LOG_DIR': cls.runtime.name + '/logs'}):
+        with patch.dict(os.environ, {'AUTOLAB_WEBUI_STATE_DIR': cls.runtime.name + '/state',
+                                     'AUTOLAB_WEBUI_LOG_DIR': cls.runtime.name + '/logs'}):
             cls.module = importlib.import_module('webui.app')
 
     def setUp(self):
@@ -443,7 +443,7 @@ class WebApiTests(unittest.TestCase):
         self.assertEqual(nodes[2]['parent_id'], nodes[1]['id'])
 
     def test_chat_includes_current_context_and_bounded_history(self):
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), patch('webui.app.chat_requests.run') as client:
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), patch('webui.app.chat_requests.run') as client:
             client.return_value = SimpleNamespace(text='回答', usage={}, finish_reason='stop')
             response = self.client.post('/api/chat', json={'question': '为什么被拒绝？',
                 'session_id': self.current_id, 'history': [{'role': 'user', 'content': '上一问'}]})
@@ -486,7 +486,7 @@ class WebApiTests(unittest.TestCase):
     def test_cancellable_chat_and_empty_chat_context(self):
         from webui import chat_requests
         session = self.client.post('/api/sessions').get_json()['session']
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch.object(chat_requests, 'run', return_value=SimpleNamespace(text='你好', usage={}, finish_reason='stop')) as run:
             response = self.client.post('/api/chat', json={'question': '你好', 'session_id': session['session_id'],
                                                          'request_id': 'request_frontend_001'})
@@ -509,7 +509,7 @@ class WebApiTests(unittest.TestCase):
     def test_chat_uses_configured_limit_and_reports_truncation(self):
         previous = '历史内容' * 2000 + '结尾不能丢失'
         answer = '| LONG_WAIT | 206 | 0.0000'
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), \
              patch('webui.app.chat_requests.run') as client:
             for finish in ('length', 'stop', None):
                 client.return_value = SimpleNamespace(text=answer, usage={}, finish_reason=finish)
@@ -566,7 +566,7 @@ class WebApiTests(unittest.TestCase):
             result = self.client.post('/api/run', json={'llm_profile': 'responses'})
             self.assertEqual(result.status_code, 200)
             self.assertEqual(start.call_args.kwargs['llm_profile'], 'responses')
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': '', 'ETS_GPT_API_KEY': 'test-gpt'}), \
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': '', 'AUTOLAB_GPT_API_KEY': 'test-gpt'}), \
              patch('webui.app.chat_requests.run') as client:
             client.return_value = SimpleNamespace(text='GPT回答', usage={}, finish_reason='stop')
             result = self.client.post('/api/chat', json={'question': '你好', 'llm_profile': 'responses'})
@@ -582,7 +582,7 @@ class WebApiTests(unittest.TestCase):
     def test_cross_session_history_is_read_only_labelled_and_optional(self):
         historical = self.make_session('S0000010', False, .55)
         pointer = (self.experiments / 'feature_mining/current.json').read_bytes()
-        with patch.dict(os.environ, {'ETS_LLM_API_KEY': 'test-only'}), patch('webui.app.chat_requests.run') as client:
+        with patch.dict(os.environ, {'AUTOLAB_LLM_API_KEY': 'test-only'}), patch('webui.app.chat_requests.run') as client:
             client.return_value = SimpleNamespace(text='历史分析', usage={}, finish_reason='stop')
             response = self.client.post('/api/chat', json={'question': '看看 S0000010', 'session_id': self.current_id})
             context = json.loads(client.call_args.args[2][0]['content'].split('当前会话上下文：\n')[1])

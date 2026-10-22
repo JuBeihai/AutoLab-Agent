@@ -30,10 +30,10 @@ class RuntimeMemoryTests(unittest.TestCase):
         with patch.object(runtime_memory, 'memory_snapshot', return_value=snapshot):
             with self.assertRaisesRegex(runtime_memory.MemoryBudgetError, '5.0 GiB'):
                 runtime_memory.require_available_memory({})
-            self.assertIs(runtime_memory.require_available_memory({'ETS_MIN_AVAILABLE_MEMORY_GB': '4'}), snapshot)
+            self.assertIs(runtime_memory.require_available_memory({'AUTOLAB_MIN_AVAILABLE_MEMORY_GB': '4'}), snapshot)
             for invalid in ('nan', 'inf', '-1', 'invalid'):
                 with self.assertRaises(RuntimeError):
-                    runtime_memory.require_available_memory({'ETS_MIN_AVAILABLE_MEMORY_GB': invalid})
+                    runtime_memory.require_available_memory({'AUTOLAB_MIN_AVAILABLE_MEMORY_GB': invalid})
         with patch.object(runtime_memory, 'memory_snapshot', return_value=None):
             self.assertIsNone(runtime_memory.require_available_memory({}))
 

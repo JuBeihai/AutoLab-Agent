@@ -108,8 +108,8 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(cmd[cmd.index('--data-source') + 1], 'offline')
 
     def test_api_lists_and_validates_before_launch(self):
-        with patch.dict(os.environ, {'ETS_WEBUI_STATE_DIR': str(self.root / 'state'),
-                                    'ETS_WEBUI_LOG_DIR': str(self.root / 'logs')}):
+        with patch.dict(os.environ, {'AUTOLAB_WEBUI_STATE_DIR': str(self.root / 'state'),
+                                    'AUTOLAB_WEBUI_LOG_DIR': str(self.root / 'logs')}):
             module = importlib.import_module('webui.app')
         with patch.object(module, '_ROOT', self.root), patch.object(module.runner, 'start_orchestrator', return_value='job_test') as launch:
             client = module.app.test_client()

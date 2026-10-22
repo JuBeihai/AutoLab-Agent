@@ -110,7 +110,7 @@ raise SystemExit(replay_main(base, sys.argv[1:]))
 SHELL = '''#!/usr/bin/env bash
 set -euo pipefail
 REPLAY_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPLAY_PYTHON="${ETS_PYTHON:-}"
+REPLAY_PYTHON="${AUTOLAB_PYTHON:-}"
 if [ -z "$REPLAY_PYTHON" ]; then
   REPLAY_PROJECT="$(cd "$REPLAY_DIR/../../../.." && pwd)"
   for candidate in "${VIRTUAL_ENV:-/nonexistent}/bin/python" "$REPLAY_PROJECT/.venv/bin/python" "$REPLAY_PROJECT/../.venv/bin/python"; do

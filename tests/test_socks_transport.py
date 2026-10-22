@@ -65,7 +65,7 @@ class SocksTransportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory); (root/'configs').mkdir()
             (root/'configs/web_research.json').write_text('{"socks_proxy":"socks5h://127.0.0.1:17890"}')
-            with patch.dict(wr.os.environ,{'ETS_WEB_RESEARCH_SOCKS_PROXY':''}):
+            with patch.dict(wr.os.environ,{'AUTOLAB_WEB_RESEARCH_SOCKS_PROXY':''}):
                 self.assertEqual(wr.load_config(root)['socks_proxy'],'')
-            with patch.dict(wr.os.environ,{'ETS_WEB_RESEARCH_SOCKS_PROXY':'socks5h://127.0.0.1:17891'}):
+            with patch.dict(wr.os.environ,{'AUTOLAB_WEB_RESEARCH_SOCKS_PROXY':'socks5h://127.0.0.1:17891'}):
                 self.assertEqual(wr.load_config(root)['socks_proxy'],'socks5h://127.0.0.1:17891')
